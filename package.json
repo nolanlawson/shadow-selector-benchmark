@@ -20,7 +20,6 @@
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^4.0.0",
     "@rollup/plugin-virtual": "^2.1.0",
-    "afterframe": "^1.0.2",
     "body-parser": "^1.20.0",
     "browserify-fs": "^1.0.0",
     "buffer": "^6.0.3",

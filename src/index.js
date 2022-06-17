@@ -1,6 +1,5 @@
 import PromiseWorker from 'promise-worker'
-import afterframe from 'afterframe'
-import {randomNumber, randomString, randomColor, randomTag, randomBool} from './rando.js';
+import {randomNumber, randomString, randomColor, randomTag, randomBool, randomChoice} from './rando.js';
 
 const worker = new PromiseWorker(new Worker('/dist/worker.js'))
 
@@ -21,6 +20,8 @@ const numAttributesInput = $('#numAttributes')
 const container = $('#container')
 const display = $('#display')
 
+let scopeId = 0
+
 goButton.addEventListener('click', e => {
   e.preventDefault()
   runTest()
@@ -35,6 +36,73 @@ async function runTest() {
   }
 }
 
+function generateAttributeValueSelector({ name, value }) {
+  return `[${name}=${JSON.stringify(value)}]`
+}
+
+function generateRandomCssRule({ classes, attributes, tags }) {
+
+  function generateRandomFullSelector() {
+    let str = ''
+    do {
+      str += generateRandomSelector(['tag', 'class', 'attributeName', 'attributeValue'])
+
+      if (randomBool()) {
+        str += generateRandomSelector(['class', 'attributeName', 'attributeValue']) // combinator selector
+      }
+      str += ' ' // descendant selector
+    } while (randomBool())
+
+    return str
+  }
+
+  function generateRandomSelector(selectorTypes) {
+    const selectorType = randomChoice(selectorTypes)
+    switch (selectorType) {
+      case 'tag':
+        return tags.length ? randomChoice(tags) : randomString()
+      case 'class':
+        return '.' + (classes.length ? randomChoice(classes) : randomString())
+      case 'attributeName':
+        return '[' + (attributes.length ? randomChoice(attributes.map(_ => _.name)) : randomString()) + ']'
+      case 'attributeValue':
+        return generateAttributeValueSelector(attributes.length ? randomChoice(attributes) : { name: randomString(), value: randomString() })
+    }
+  }
+
+  const selector = generateRandomFullSelector()
+
+  return `${selector} { color: ${randomColor()}; }`
+}
+
+function generateRandomCss({ numRules, classes, attributes, tags }) {
+  let str = ''
+
+  for (let i = 0; i < numRules; i++) {
+    str += generateRandomCssRule({ classes, attributes, tags }) + '\n\n'
+  }
+
+  return str
+}
+
+function createStyleTag(css) {
+  const style = document.createElement('style')
+  style.textContent = css
+  return style
+}
+
+function injectGlobalCss(css) {
+  document.head.appendChild(createStyleTag(css))
+}
+
+async function generateRandomScopedCss({ useShadowDom, numRules, classes, attributes, tags, scopeToken }) {
+  const css = generateRandomCss({ numRules, classes, attributes, tags })
+  if (useShadowDom) {
+    return css
+  }
+  return (await scopeStyle(css, scopeToken))
+}
+
 async function doRunTest() {
   const numComponents = parseInt(numComponentsInput.value, 10)
   const numElementsPerComponent = parseInt(numElementsInput.value, 10)
@@ -46,15 +114,26 @@ async function doRunTest() {
   container.innerHTML = ''
   $$('style').forEach(style => style.remove())
 
-  function createComponent() {
-    const root = document.createElement('my-component')
+  function createComponent({ scopeToken }) {
+    const component = document.createElement('my-component')
+
+    let renderRoot = component
+    if (useShadowDom) {
+      const shadow = renderRoot.attachShadow({ mode: 'open' })
+      renderRoot = shadow
+    }
 
     let lastElm
 
     const numElements = randomNumber(1, numElementsPerComponent * 2)
 
+    const tags = []
+    const classes = []
+    const attributes = []
+
     for (let i = 0; i < numElements; i++) {
       const tag = randomTag()
+      tags.push(tag)
       const elm = document.createElement(tag)
       elm.textContent = randomColor()
 
@@ -62,37 +141,93 @@ async function doRunTest() {
       const numAttributes = randomNumber(0, (numAttributesPerElement * 2) - 1)
 
       for (let j = 0; j < numClasses; j++) {
-        elm.classList.add(randomString())
+        const clazz = randomString()
+        classes.push(clazz)
+        elm.classList.add(clazz)
       }
 
       for (let j = 0; j < numAttributes; j++) {
-        elm.setAttribute(`data-${randomString()}`, randomString())
+        const attribute = `data-${randomString()}`
+        const attributeValue = randomString()
+        attributes.push({ name: attribute, value: attributeValue })
+        elm.setAttribute(attribute, attributeValue)
+      }
+
+      if (scopeToken) {
+        elm.setAttribute(scopeToken, '')
       }
 
       // 50/50 chance of making the tree deeper or keeping it flat
       if (lastElm && randomBool()) {
         lastElm.appendChild(elm)
       } else {
-        root.appendChild(elm)
+        renderRoot.appendChild(elm)
       }
 
       lastElm = elm
     }
 
-    return root
-
+    return { component, tags, classes, attributes }
   }
 
+  const globalStylesheets = []
+  const localStylesheets = []
+  const newRoot = document.createElement('div')
   let lastComponent
+
   for (let i = 0; i < numComponents; i++) {
-    const component = createComponent()
+    const scopeToken = !useShadowDom && `scope-${++scopeId}`
+    const { component, tags, classes, attributes } = createComponent({ scopeToken })
+
+    const numRules = randomNumber(1, numRulesPerComponent * 2)
+    const stylesheet = await generateRandomScopedCss({ useShadowDom, classes, tags, attributes, scopeToken, numRules })
+
+    if (useShadowDom) {
+      localStylesheets.push({ shadowRoot: component.shadowRoot, stylesheet })
+    } else {
+      globalStylesheets.push(stylesheet)
+    }
 
     // 50/50 chance of making the tree deeper or keeping it flat
     if (lastComponent && randomBool()) {
       lastComponent.appendChild(component)
     } else {
-      container.appendChild(component)
+      newRoot.appendChild(component)
     }
     lastComponent = component
   }
+
+  function flushStyles() {
+    if (useShadowDom) {
+      // We probably could have appended stylesheets to the shadow roots earlier,
+      // but just in case browsers have some magic to process the stylesheet as early as possible,
+      // do it at the same time we would be injecting global styles
+      for (const { shadowRoot, stylesheet } of localStylesheets) {
+        shadowRoot.appendChild(createStyleTag(stylesheet))
+      }
+    } else {
+      const combinedStylesheet = globalStylesheets.join('\n\n')
+      injectGlobalCss(combinedStylesheet)
+    }
+  }
+
+  // Flush everything to the DOM in one go so we can measure accurately
+  flushStyles()
+  container.appendChild(newRoot)
+
+  performance.mark('start')
+  // requestPostAnimationFrame polyfill
+  requestAnimationFrame(() => {
+    addEventListener('message', () => {
+      performance.measure('total', 'start')
+      done()
+    }, { once: true })
+    postMessage('', '*')
+  })
+}
+
+function done() {
+  display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
+  container.innerHTML = ''
+  $$('style').forEach(style => style.remove())
 }
