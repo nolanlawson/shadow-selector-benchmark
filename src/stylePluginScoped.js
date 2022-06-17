@@ -177,4 +177,4 @@ function isSpaceCombinator(node) {
   return node.type === 'combinator' && /^\s+$/.test(node.value);
 }
 scopedPlugin.postcss = true;
-export default scopedPlugin;
+export{  scopedPlugin };
