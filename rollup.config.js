@@ -4,6 +4,9 @@ import json from '@rollup/plugin-json'
 import virtual from '@rollup/plugin-virtual'
 import replace from '@rollup/plugin-replace'
 import inject from '@rollup/plugin-inject'
+import { terser } from 'rollup-plugin-terser'
+
+const mode = process.env.NODE_ENV ?? 'production'
 
 export default {
   input: './src/index.js',
@@ -31,7 +34,7 @@ export default {
     commonjs(),
     json(),
     replace({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV ?? 'production'),
+      'process.env.NODE_ENV': JSON.stringify(mode),
       'global.setTimeout': 'globalThis.setTimeout',
       'global.clearTimeout': 'globalThis.clearTimeout',
       'global.performance': 'globalThis.performance',
@@ -43,9 +46,11 @@ export default {
         process: 'process-es6'
       },
     }),
+    mode === 'production' && terser()
   ],
   output: {
     format: 'esm',
-    file: './dist/index.js'
+    file: './dist/index.js',
+    sourcemap: true
   },
 }
