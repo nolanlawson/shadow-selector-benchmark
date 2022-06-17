@@ -42,7 +42,7 @@ function generateRandomCssRule({ classes, attributes, tags }) {
       str += generateRandomSelector(['tag', 'class', 'attributeName', 'attributeValue'])
 
       if (randomBool()) {
-        str += generateRandomSelector(['class', 'attributeName', 'attributeValue']) // combinator selector
+        str += generateRandomSelector(['class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute']) // combinator selector
       }
       str += ' ' // descendant selector
     } while (randomBool())
@@ -61,6 +61,10 @@ function generateRandomCssRule({ classes, attributes, tags }) {
         return '[' + (attributes.length ? randomChoice(attributes.map(_ => _.name)) : randomString()) + ']'
       case 'attributeValue':
         return generateAttributeValueSelector(attributes.length ? randomChoice(attributes) : { name: randomString(), value: randomString() })
+      case 'notClass':
+        return ':not(.' + (classes.length ? randomChoice(classes) : randomString()) + ')'
+      case 'notAttribute':
+        return ':not([' + (attributes.length ? randomChoice(attributes.map(_ => _.name)) : randomString()) + '])'
     }
   }
 
@@ -227,6 +231,6 @@ async function doRunTest() {
 
 function done() {
   display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
-  // container.innerHTML = ''
-  // $$('style').forEach(style => style.remove())
+  container.innerHTML = ''
+  $$('style').forEach(style => style.remove())
 }
