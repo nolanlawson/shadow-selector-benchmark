@@ -1,11 +1,5 @@
-import PromiseWorker from 'promise-worker'
 import {randomNumber, randomString, randomColor, randomTag, randomBool, randomChoice} from './rando.js';
-
-const worker = new PromiseWorker(new Worker('/dist/worker.js'))
-
-function scopeStyle(css, token) {
-  return worker.postMessage({ css, token })
-}
+import {scopeStyle} from './workerClient.js';
 
 const $ = document.querySelector.bind(document)
 const $$ = _ => [...document.querySelectorAll(_)]
@@ -170,6 +164,7 @@ async function doRunTest() {
     return { component, tags, classes, attributes }
   }
 
+  const generateStylesheetPromises = []
   const globalStylesheets = []
   const localStylesheets = []
   const newRoot = document.createElement('div')
@@ -180,13 +175,16 @@ async function doRunTest() {
     const { component, tags, classes, attributes } = createComponent({ scopeToken })
 
     const numRules = randomNumber(1, numRulesPerComponent * 2)
-    const stylesheet = await generateRandomScopedCss({ useShadowDom, classes, tags, attributes, scopeToken, numRules })
 
-    if (useShadowDom) {
-      localStylesheets.push({ shadowRoot: component.shadowRoot, stylesheet })
-    } else {
-      globalStylesheets.push(stylesheet)
-    }
+    generateStylesheetPromises.push((async () => {
+      const stylesheet = await generateRandomScopedCss({ useShadowDom, classes, tags, attributes, scopeToken, numRules })
+
+      if (useShadowDom) {
+        localStylesheets.push({ shadowRoot: component.shadowRoot, stylesheet })
+      } else {
+        globalStylesheets.push(stylesheet)
+      }
+    })())
 
     // 50/50 chance of making the tree deeper or keeping it flat
     if (lastComponent && randomBool()) {
@@ -212,6 +210,7 @@ async function doRunTest() {
   }
 
   // Flush everything to the DOM in one go so we can measure accurately
+  await Promise.all(generateStylesheetPromises)
   flushStyles()
   container.appendChild(newRoot)
 
