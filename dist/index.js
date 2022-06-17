@@ -33090,6 +33090,19 @@ Document$3.registerProcessor = dependant => {
 var document$1 = Document$3;
 Document$3.default = Document$3;
 
+/* eslint-disable no-console */
+
+let printed = {};
+
+var warnOnce$2 = function warnOnce(message) {
+  if (printed[message]) return
+  printed[message] = true;
+
+  if (typeof console !== 'undefined' && console.warn) {
+    console.warn(message);
+  }
+};
+
 class Warning$2 {
   constructor(text, opts = {}) {
     this.type = 'warning';
@@ -33942,6 +33955,26 @@ function parse$3(css, opts) {
   try {
     parser.parse();
   } catch (e) {
+    {
+      if (e.name === 'CssSyntaxError' && opts && opts.from) {
+        if (/\.scss$/i.test(opts.from)) {
+          e.message +=
+            '\nYou tried to parse SCSS with ' +
+            'the standard CSS parser; ' +
+            'try again with the postcss-scss parser';
+        } else if (/\.sass/i.test(opts.from)) {
+          e.message +=
+            '\nYou tried to parse Sass with ' +
+            'the standard CSS parser; ' +
+            'try again with the postcss-sass parser';
+        } else if (/\.less$/i.test(opts.from)) {
+          e.message +=
+            '\nYou tried to parse Less with ' +
+            'the standard CSS parser; ' +
+            'try again with the postcss-less parser';
+        }
+      }
+    }
     throw e
   }
 
@@ -33958,6 +33991,7 @@ let MapGenerator$1 = mapGenerator;
 let stringify$2 = stringify_1;
 let Container$1 = container$1;
 let Document$2 = document$1;
+let warnOnce$1 = warnOnce$2;
 let Result$2 = result;
 let parse$2 = parse_1;
 let Root$3 = root$2;
@@ -34146,6 +34180,15 @@ class LazyResult$2 {
   }
 
   then(onFulfilled, onRejected) {
+    {
+      if (!('from' in this.opts)) {
+        warnOnce$1(
+          'Without `from` option PostCSS could generate wrong source map ' +
+            'and will not find Browserslist config. Set it to CSS file path ' +
+            'or to `undefined` to prevent this warning.'
+        );
+      }
+    }
     return this.async().then(onFulfilled, onRejected)
   }
 
@@ -34299,7 +34342,27 @@ class LazyResult$2 {
         error.plugin = plugin.postcssPlugin;
         error.setMessage();
       } else if (plugin.postcssVersion) {
-        if ("production" !== 'production') ;
+        if ("development" !== 'production') {
+          let pluginName = plugin.postcssPlugin;
+          let pluginVer = plugin.postcssVersion;
+          let runtimeVer = this.result.processor.version;
+          let a = pluginVer.split('.');
+          let b = runtimeVer.split('.');
+
+          if (a[0] !== b[0] || parseInt(a[1]) > parseInt(b[1])) {
+            // eslint-disable-next-line no-console
+            console.error(
+              'Unknown error from PostCSS plugin. Your current PostCSS ' +
+                'version is ' +
+                runtimeVer +
+                ', but ' +
+                pluginName +
+                ' uses ' +
+                pluginVer +
+                '. Perhaps this is the source of the error below.'
+            );
+          }
+        }
       }
     } catch (err) {
       /* c8 ignore next 3 */
@@ -34474,6 +34537,7 @@ Document$2.registerLazyResult(LazyResult$2);
 
 let MapGenerator = mapGenerator;
 let stringify$1 = stringify_1;
+let warnOnce = warnOnce$2;
 let parse$1 = parse_1;
 const Result$1 = result;
 
@@ -34570,6 +34634,15 @@ class NoWorkResult$1 {
   }
 
   then(onFulfilled, onRejected) {
+    {
+      if (!('from' in this._opts)) {
+        warnOnce(
+          'Without `from` option PostCSS could generate wrong source map ' +
+            'and will not find Browserslist config. Set it to CSS file path ' +
+            'or to `undefined` to prevent this warning.'
+        );
+      }
+    }
 
     return this.async().then(onFulfilled, onRejected)
   }
@@ -34640,7 +34713,15 @@ class Processor$1 {
         normalized.push(i);
       } else if (typeof i === 'function') {
         normalized.push(i);
-      } else if (typeof i === 'object' && (i.parse || i.stringify)) ; else {
+      } else if (typeof i === 'object' && (i.parse || i.stringify)) {
+        {
+          throw new Error(
+            'PostCSS syntaxes cannot be used as plugins. Instead, please use ' +
+              'one of the syntax/parser/stringifier options as outlined ' +
+              'in your PostCSS runner documentation.'
+          )
+        }
+      } else {
         throw new Error(i + ' is not a PostCSS plugin')
       }
     }

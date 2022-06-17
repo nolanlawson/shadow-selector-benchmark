@@ -1,5 +1,5 @@
 import express from 'express'
-import {scopeStyle} from './server/scopeStyle.js';
+import {scopeStyle} from './src/scopeStyle.js';
 import bodyParser from 'body-parser'
 
 const app = express()

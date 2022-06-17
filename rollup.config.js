@@ -31,7 +31,7 @@ export default {
     commonjs(),
     json(),
     replace({
-      'process.env.NODE_ENV': '"production"',
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV ?? 'production'),
       'global.setTimeout': 'globalThis.setTimeout',
       'global.clearTimeout': 'globalThis.clearTimeout',
       'global.performance': 'globalThis.performance',
