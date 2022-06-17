@@ -188,7 +188,7 @@ async function doRunTest() {
 
     // 50/50 chance of making the tree deeper or keeping it flat
     if (lastComponent && randomBool()) {
-      lastComponent.appendChild(component)
+      (lastComponent.shadowRoot ?? lastComponent).appendChild(component)
     } else {
       newRoot.appendChild(component)
     }
@@ -227,6 +227,6 @@ async function doRunTest() {
 
 function done() {
   display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
-  container.innerHTML = ''
-  $$('style').forEach(style => style.remove())
+  // container.innerHTML = ''
+  // $$('style').forEach(style => style.remove())
 }
