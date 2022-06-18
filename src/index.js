@@ -6,6 +6,7 @@ const $$ = _ => [...document.querySelectorAll(_)]
 
 const goButton = $('#go')
 const useShadowDomInput = $('#useShadowDom')
+const scopeStylesInput = $('#scopeStyles')
 const numRulesInput = $('#numRules')
 const numComponentsInput = $('#numComponents')
 const numElementsInput = $('#numElements')
@@ -45,7 +46,7 @@ function generateRandomCssRule({ classes, attributes, tags }) {
         str += generateRandomSelector(['class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute']) // combinator selector
       }
       str += ' ' // descendant selector
-    } while (randomCoin(0.75))
+    } while (randomBool())
 
     return str
   }
@@ -93,14 +94,6 @@ function injectGlobalCss(css) {
   document.head.appendChild(createStyleTag(css))
 }
 
-async function generateRandomScopedCss({ useShadowDom, numRules, classes, attributes, tags, scopeToken }) {
-  const css = generateRandomCss({ numRules, classes, attributes, tags })
-  if (useShadowDom) {
-    return css
-  }
-  return (await scopeStyle(css, scopeToken))
-}
-
 async function doRunTest() {
   const numComponents = parseInt(numComponentsInput.value, 10)
   const numElementsPerComponent = parseInt(numElementsInput.value, 10)
@@ -108,9 +101,18 @@ async function doRunTest() {
   const numAttributesPerElement = parseInt(numAttributesInput.value, 10)
   const numRulesPerComponent = parseInt(numRulesInput.value, 10)
   const useShadowDom = useShadowDomInput.checked
+  const scopeStyles = scopeStylesInput.checked
 
   container.innerHTML = ''
   $$('style').forEach(style => style.remove())
+
+  async function generateRandomScopedCss({ numRules, classes, attributes, tags, scopeToken }) {
+    const css = generateRandomCss({ numRules, classes, attributes, tags })
+    if (!scopeStyles) {
+      return css
+    }
+    return (await scopeStyle(css, scopeToken))
+  }
 
   function createComponent({ scopeToken }) {
     const component = document.createElement('my-component')
@@ -175,13 +177,13 @@ async function doRunTest() {
   let lastComponent
 
   for (let i = 0; i < numComponents; i++) {
-    const scopeToken = !useShadowDom && `scope-${++scopeId}`
+    const scopeToken = scopeStyles && `scope-${++scopeId}`
     const { component, tags, classes, attributes } = createComponent({ scopeToken })
 
     const numRules = randomNumber(1, numRulesPerComponent * 2)
 
     generateStylesheetPromises.push((async () => {
-      const stylesheet = await generateRandomScopedCss({ useShadowDom, classes, tags, attributes, scopeToken, numRules })
+      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules })
 
       if (useShadowDom) {
         localStylesheets.push({ shadowRoot: component.shadowRoot, stylesheet })
@@ -231,6 +233,6 @@ async function doRunTest() {
 
 function done() {
   display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
-  container.innerHTML = ''
-  $$('style').forEach(style => style.remove())
+  // container.innerHTML = ''
+  // $$('style').forEach(style => style.remove())
 }
