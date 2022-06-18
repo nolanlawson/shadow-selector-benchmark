@@ -1,4 +1,13 @@
-import {randomNumber, randomString, randomColor, randomTag, randomBool, randomChoice, randomCoin} from './rando.js';
+import {
+  randomNumber,
+  randomString,
+  randomColor,
+  randomTag,
+  randomBool,
+  randomChoice,
+  randomCoin,
+  resetRandomSeed
+} from './rando.js';
 import {scopeStyle} from './workerClient.js';
 
 const $ = document.querySelector.bind(document)
@@ -12,10 +21,15 @@ const numComponentsInput = $('#numComponents')
 const numElementsInput = $('#numElements')
 const numClassesInput = $('#numClasses')
 const numAttributesInput = $('#numAttributes')
+const oneBigStyleInput = $('#oneBigStyle')
 const container = $('#container')
 const display = $('#display')
 
 let scopeId = 0
+
+scopeStylesInput.addEventListener('change', () => {
+  oneBigStyleInput.disabled = !scopeStylesInput.checked
+})
 
 goButton.addEventListener('click', e => {
   e.preventDefault()
@@ -43,7 +57,7 @@ function generateRandomCssRule({ classes, attributes, tags }) {
       str += generateRandomSelector(['tag', 'class', 'attributeName', 'attributeValue'])
 
       if (randomBool()) {
-        str += generateRandomSelector(['class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute']) // combinator selector
+        str += generateRandomSelector(['class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute', 'nthChild']) // combinator selector
       }
       str += ' ' // descendant selector
     } while (randomBool())
@@ -66,12 +80,14 @@ function generateRandomCssRule({ classes, attributes, tags }) {
         return ':not(.' + (classes.length ? randomChoice(classes) : randomString()) + ')'
       case 'notAttribute':
         return ':not([' + (attributes.length ? randomChoice(attributes.map(_ => _.name)) : randomString()) + '])'
+      case 'nthChild':
+        return `:nth-child(${randomNumber(1, 5)})`
     }
   }
 
   const selector = generateRandomFullSelector()
 
-  return `${selector} { color: ${randomColor()}; }`
+  return `${selector} { background-color: ${randomColor()}; }`
 }
 
 function generateRandomCss({ numRules, classes, attributes, tags }) {
@@ -94,6 +110,13 @@ function injectGlobalCss(css) {
   document.head.appendChild(createStyleTag(css))
 }
 
+function reset() {
+  container.innerHTML = ''
+  $$('style').forEach(style => style.remove())
+  resetRandomSeed()
+  scopeId = 0
+}
+
 async function doRunTest() {
   const numComponents = parseInt(numComponentsInput.value, 10)
   const numElementsPerComponent = parseInt(numElementsInput.value, 10)
@@ -102,9 +125,9 @@ async function doRunTest() {
   const numRulesPerComponent = parseInt(numRulesInput.value, 10)
   const useShadowDom = useShadowDomInput.checked
   const scopeStyles = scopeStylesInput.checked
+  const oneBigStyle = oneBigStyleInput.checked
 
-  container.innerHTML = ''
-  $$('style').forEach(style => style.remove())
+  reset()
 
   async function generateRandomScopedCss({ numRules, classes, attributes, tags, scopeToken }) {
     const css = generateRandomCss({ numRules, classes, attributes, tags })
@@ -135,7 +158,13 @@ async function doRunTest() {
       const tag = randomTag()
       tags.push(tag)
       const elm = document.createElement(tag)
-      elm.textContent = randomColor()
+      Object.assign(elm.style, {
+        width: '1px',
+        height: '1px',
+        position: 'absolute',
+        left: '0',
+        right: '0'
+      })
 
       const numClasses = randomNumber(0, (numClassesPerElement * 2) - 1)
       const numAttributes = randomNumber(0, (numAttributesPerElement * 2) - 1)
@@ -171,8 +200,6 @@ async function doRunTest() {
   }
 
   const generateStylesheetPromises = []
-  const globalStylesheets = []
-  const localStylesheets = []
   const newRoot = document.createElement('div')
   let lastComponent
 
@@ -186,9 +213,9 @@ async function doRunTest() {
       const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules })
 
       if (useShadowDom) {
-        localStylesheets.push({ shadowRoot: component.shadowRoot, stylesheet })
+        return { shadowRoot: component.shadowRoot, stylesheet }
       } else {
-        globalStylesheets.push(stylesheet)
+        return stylesheet
       }
     })())
 
@@ -201,23 +228,28 @@ async function doRunTest() {
     lastComponent = component
   }
 
-  function flushStyles() {
+  function flushStyles(stylesheetsToProcess) {
     if (useShadowDom) {
       // We probably could have appended stylesheets to the shadow roots earlier,
       // but just in case browsers have some magic to process the stylesheet as early as possible,
       // do it at the same time we would be injecting global styles
-      for (const { shadowRoot, stylesheet } of localStylesheets) {
+      for (const { shadowRoot, stylesheet } of stylesheetsToProcess) {
         shadowRoot.appendChild(createStyleTag(stylesheet))
       }
     } else {
-      const combinedStylesheet = globalStylesheets.join('\n\n')
-      injectGlobalCss(combinedStylesheet)
+      if (oneBigStyle) {
+        injectGlobalCss(stylesheetsToProcess.join('\n'))
+      } else {
+        for (const stylesheet of stylesheetsToProcess) {
+          injectGlobalCss(stylesheet)
+        }
+      }
     }
   }
 
   // Flush everything to the DOM in one go so we can measure accurately
-  await Promise.all(generateStylesheetPromises)
-  flushStyles()
+  const stylesheetsToProcess = await Promise.all(generateStylesheetPromises)
+  flushStyles(stylesheetsToProcess)
   container.appendChild(newRoot)
 
   performance.mark('start')
@@ -225,14 +257,24 @@ async function doRunTest() {
   requestAnimationFrame(() => {
     addEventListener('message', () => {
       performance.measure('total', 'start')
-      done()
+      display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
+
+      logChecksums()
+
     }, { once: true })
     postMessage('', '*')
   })
 }
 
-function done() {
-  display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
-  // container.innerHTML = ''
-  // $$('style').forEach(style => style.remove())
+async function logChecksums() {
+  // Make sure the HTML is the same every time
+  console.log(await digestMessage(container.getInnerHTML ? container.getInnerHTML({ includeShadowRoots: true }) : container.innerHTML))
+  console.log(await digestMessage($$('style').map(_ => _.textContent).join('\n')))
+}
+
+async function digestMessage(message) {
+  const msgUint8 = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }

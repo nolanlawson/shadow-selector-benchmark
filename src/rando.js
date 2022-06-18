@@ -1,19 +1,20 @@
-import {XORShift} from 'random-seedable'
+import { LCG } from 'random-seedable'
 
-const random = new XORShift(114569486) // use a consistent seed
+const SEED = 114569486 // use a consistent seed
+
+let random
 
 const tags = [
-  'div',
-  'span',
-  'a',
-  'em',
-  'strong',
-  'p',
-  'section',
-  'article',
-  'header',
-  'footer',
-  'abbr'
+  'custom-a',
+  'custom-b',
+  'custom-c',
+  'custom-d',
+  'custom-e',
+  'custom-f',
+  'custom-g',
+  'custom-h',
+  'custom-i',
+  'custom-j',
 ]
 
 const colors = [
@@ -177,3 +178,9 @@ export const randomString = () => Math.round(random.int()).toString(16)
 export const randomNumber = (from, to) => random.randRange(from, to)
 export const randomBool = () => random.bool()
 export const randomCoin = (prob) => random.coin(prob)
+
+export const resetRandomSeed = () => {
+  random = new LCG(SEED) // LCG used because it's relatively fast compared to others
+}
+
+resetRandomSeed()

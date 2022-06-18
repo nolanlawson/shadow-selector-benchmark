@@ -17,7 +17,7 @@
       <label>Average elements per component: <input type="number" step="1" value="10" id="numElements"></label>
     </div>
     <div style="padding: 10px;">
-      <label>Average CSS rules per component: <input type="number" step="1" value="20" id="numRules"></label>
+      <label>Average CSS rules per component: <input type="number" step="1" value="10" id="numRules"></label>
     </div>
     <div style="padding: 10px;">
       <label>Average classes per element: <input type="number" step="1" value="3" id="numClasses"></label>
@@ -32,11 +32,14 @@
       <label>Scope styles: <input type="checkbox" id="scopeStyles" checked></label>
     </div>
     <div style="padding: 10px;">
+      <label>Concatenate stylesheets in scoped mode <input type="checkbox" id="oneBigStyle" checked></label>
+    </div>
+    <div style="padding: 10px;">
       <button id="go" style="font-size: 1em">Go</button>
     </div>
   </form>
   <pre id="display"></pre>
-  <div id="container"></div>
+  <div id="container" style="position: relative"></div>
 </main>
 <script type="module" src="./dist/index.js"></script>
 </body>
