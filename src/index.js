@@ -1,4 +1,4 @@
-import {randomNumber, randomString, randomColor, randomTag, randomBool, randomChoice} from './rando.js';
+import {randomNumber, randomString, randomColor, randomTag, randomBool, randomChoice, randomCoin} from './rando.js';
 import {scopeStyle} from './workerClient.js';
 
 const $ = document.querySelector.bind(document)
@@ -45,7 +45,7 @@ function generateRandomCssRule({ classes, attributes, tags }) {
         str += generateRandomSelector(['class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute']) // combinator selector
       }
       str += ' ' // descendant selector
-    } while (randomBool())
+    } while (randomCoin(0.75))
 
     return str
   }
@@ -155,8 +155,8 @@ async function doRunTest() {
         elm.setAttribute(scopeToken, '')
       }
 
-      // 50/50 chance of making the tree deeper or keeping it flat
-      if (lastElm && randomBool()) {
+      // Chance of making the tree deeper or keeping it flat
+      if (lastElm && randomCoin(0.9)) {
         lastElm.appendChild(elm)
       } else {
         renderRoot.appendChild(elm)
@@ -190,8 +190,8 @@ async function doRunTest() {
       }
     })())
 
-    // 50/50 chance of making the tree deeper or keeping it flat
-    if (lastComponent && randomBool()) {
+    // Chance of making the tree deeper or keeping it flat
+    if (lastComponent && randomCoin(0.75)) {
       (lastComponent.shadowRoot ?? lastComponent).appendChild(component)
     } else {
       newRoot.appendChild(component)

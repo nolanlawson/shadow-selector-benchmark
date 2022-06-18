@@ -5,7 +5,6 @@ const random = new XORShift(114569486) // use a consistent seed
 const tags = [
   'div',
   'span',
-  'button',
   'a',
   'em',
   'strong',
@@ -13,7 +12,8 @@ const tags = [
   'section',
   'article',
   'header',
-  'footer'
+  'footer',
+  'abbr'
 ]
 
 const colors = [
@@ -176,3 +176,4 @@ export const randomColor = () => randomChoice(colors)
 export const randomString = () => Math.round(random.int()).toString(16)
 export const randomNumber = (from, to) => random.randRange(from, to)
 export const randomBool = () => random.bool()
+export const randomCoin = (prob) => random.coin(prob)
