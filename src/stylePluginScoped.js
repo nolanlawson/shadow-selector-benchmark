@@ -6,6 +6,12 @@ const animationRE = /^(-\w+-)?animation$/;
 
 const warn = console.warn.bind(console)
 
+let useClasses = false
+
+export const setUseClasses = (val) => {
+  useClasses = val
+}
+
 const scopedPlugin = (id = '') => {
   const keyframes = Object.create(null);
   const shortId = id.replace(/^data-v-/, '');
@@ -162,15 +168,20 @@ function rewriteSelector(id, selector, selectorRoot, slotted = false) {
   }
   if (shouldInject) {
     const idToAdd = slotted ? id + '-s' : id;
+    const after = useClasses ? selectorParser.className({
+      value: idToAdd,
+      raws: {},
+      quoteMark: `"`
+    }) : selectorParser.attribute({
+      attribute: idToAdd,
+      value: idToAdd,
+      raws: {},
+      quoteMark: `"`
+    })
     selector.insertAfter(
       // If node is null it means we need to inject [id] at the start
       // insertAfter can handle `null` here
-      node, selectorParser.attribute({
-        attribute: idToAdd,
-        value: idToAdd,
-        raws: {},
-        quoteMark: `"`
-      }));
+      node, after);
   }
 }
 function isSpaceCombinator(node) {

@@ -16,6 +16,6 @@ function nextWorker() {
   }
 }
 
-export function scopeStyle(css, token) {
-  return nextWorker().postMessage({ css, token })
+export function scopeStyle({ css, token, useClasses }) {
+  return nextWorker().postMessage({ css, token, useClasses })
 }

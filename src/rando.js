@@ -174,7 +174,7 @@ export function randomChoice(arr) {
 
 export const randomTag = () => randomChoice(tags)
 export const randomColor = () => randomChoice(colors)
-export const randomString = () => Math.round(random.int()).toString(16)
+export const randomString = () => 'x' + Math.round(random.int()).toString(16)
 export const randomNumber = (from, to) => random.randRange(from, to)
 export const randomBool = () => random.bool()
 export const randomCoin = (prob) => random.coin(prob)

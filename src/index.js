@@ -22,13 +22,14 @@ const numElementsInput = $('#numElements')
 const numClassesInput = $('#numClasses')
 const numAttributesInput = $('#numAttributes')
 const oneBigStyleInput = $('#oneBigStyle')
+const useClassesInput = $('#useClasses')
 const container = $('#container')
 const display = $('#display')
 
 let scopeId = 0
 
 scopeStylesInput.addEventListener('change', () => {
-  oneBigStyleInput.disabled = !scopeStylesInput.checked
+  useClassesInput.disabled = oneBigStyleInput.disabled = !scopeStylesInput.checked
 })
 
 goButton.addEventListener('click', e => {
@@ -126,15 +127,16 @@ async function doRunTest() {
   const useShadowDom = useShadowDomInput.checked
   const scopeStyles = scopeStylesInput.checked
   const oneBigStyle = oneBigStyleInput.checked
+  const useClasses = useClassesInput.checked
 
   reset()
 
-  async function generateRandomScopedCss({ numRules, classes, attributes, tags, scopeToken }) {
+  async function generateRandomScopedCss({ numRules, classes, attributes, tags, scopeToken, useClasses }) {
     const css = generateRandomCss({ numRules, classes, attributes, tags })
     if (!scopeStyles) {
       return css
     }
-    return (await scopeStyle(css, scopeToken))
+    return (await scopeStyle({ css, token: scopeToken, useClasses }))
   }
 
   function createComponent({ scopeToken }) {
@@ -183,7 +185,11 @@ async function doRunTest() {
       }
 
       if (scopeToken) {
-        elm.setAttribute(scopeToken, '')
+        if (useClasses) {
+          elm.classList.add(scopeToken)
+        } else {
+          elm.setAttribute(scopeToken, '')
+        }
       }
 
       // Chance of making the tree deeper or keeping it flat
@@ -210,7 +216,7 @@ async function doRunTest() {
     const numRules = randomNumber(1, numRulesPerComponent * 2)
 
     generateStylesheetPromises.push((async () => {
-      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules })
+      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules, useClasses })
 
       if (useShadowDom) {
         return { shadowRoot: component.shadowRoot, stylesheet }
@@ -268,8 +274,8 @@ async function doRunTest() {
 
 async function logChecksums() {
   // Make sure the HTML is the same every time
-  console.log(await digestMessage(container.getInnerHTML ? container.getInnerHTML({ includeShadowRoots: true }) : container.innerHTML))
-  console.log(await digestMessage($$('style').map(_ => _.textContent).join('\n')))
+  console.log('html digest', await digestMessage(container.getInnerHTML ? container.getInnerHTML({ includeShadowRoots: true }) : container.innerHTML))
+  console.log('style digest', await digestMessage($$('style').map(_ => _.textContent).join('\n')))
 }
 
 async function digestMessage(message) {
