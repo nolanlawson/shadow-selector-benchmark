@@ -188,7 +188,7 @@ async function doRunTest() {
       }
 
       // Chance of making the tree deeper or keeping it flat
-      if (lastElm && randomCoin(0.9)) {
+      if (lastElm && randomCoin(0.75)) {
         lastElm.appendChild(elm)
       } else {
         renderRoot.appendChild(elm)
@@ -219,7 +219,7 @@ async function doRunTest() {
     })())
 
     // Chance of making the tree deeper or keeping it flat
-    if (lastComponent && randomCoin(0.75)) {
+    if (lastComponent && randomBool()) {
       (lastComponent.shadowRoot ?? lastComponent).appendChild(component)
     } else {
       newRoot.appendChild(component)
