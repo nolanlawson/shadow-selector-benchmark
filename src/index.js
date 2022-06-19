@@ -257,7 +257,7 @@ async function doRunTest() {
   requestAnimationFrame(() => {
     addEventListener('message', () => {
       performance.measure('total', 'start')
-      display.innerHTML += `${performance.getEntriesByType('measure').at(-1).duration}ms\n`
+      display.innerHTML += `${performance.getEntriesByType('measure').slice(-1)[0].duration}ms\n`
 
       logChecksums()
 
