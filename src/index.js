@@ -131,8 +131,8 @@ async function doRunTest() {
 
   reset()
 
-  async function generateRandomScopedCss({ numRules, classes, attributes, tags, scopeToken, useClasses }) {
-    const css = generateRandomCss({ numRules, classes, attributes, tags })
+  async function generateRandomScopedCss({ classes, attributes, tags, scopeToken, useClasses }) {
+    const css = generateRandomCss({ numRules: numRulesPerComponent, classes, attributes, tags })
     if (!scopeStyles) {
       return css
     }
@@ -150,13 +150,11 @@ async function doRunTest() {
 
     let lastElm
 
-    const numElements = randomNumber(1, numElementsPerComponent * 2)
-
     const tags = []
     const classes = []
     const attributes = []
 
-    for (let i = 0; i < numElements; i++) {
+    for (let i = 0; i < numElementsPerComponent; i++) {
       const tag = randomTag()
       tags.push(tag)
       const elm = document.createElement(tag)
@@ -168,16 +166,13 @@ async function doRunTest() {
         right: '0'
       })
 
-      const numClasses = randomNumber(0, (numClassesPerElement * 2) - 1)
-      const numAttributes = randomNumber(0, (numAttributesPerElement * 2) - 1)
-
-      for (let j = 0; j < numClasses; j++) {
+      for (let j = 0; j < numClassesPerElement; j++) {
         const clazz = randomString()
         classes.push(clazz)
         elm.classList.add(clazz)
       }
 
-      for (let j = 0; j < numAttributes; j++) {
+      for (let j = 0; j < numAttributesPerElement; j++) {
         const attribute = `data-${randomString()}`
         const attributeValue = randomString()
         attributes.push({ name: attribute, value: attributeValue })
@@ -212,8 +207,6 @@ async function doRunTest() {
   for (let i = 0; i < numComponents; i++) {
     const scopeToken = scopeStyles && `scope-${++scopeId}`
     const { component, tags, classes, attributes } = createComponent({ scopeToken })
-
-    const numRules = randomNumber(1, numRulesPerComponent * 2)
 
     generateStylesheetPromises.push((async () => {
       const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules, useClasses })
