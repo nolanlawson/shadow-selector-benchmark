@@ -3,7 +3,8 @@ import PromiseWorker from 'promise-worker';
 const poolSize = (navigator.hardwareConcurrency ?? 2) - 1
 
 let currentWorker = 0
-const workerPool = new Array(poolSize).fill().map(() => new PromiseWorker(new Worker('/dist/worker.js')))
+const workerUrl = new URL(import.meta.url.replace(/[^\/]+$/, 'worker.js'))
+const workerPool = new Array(poolSize).fill().map(() => new PromiseWorker(new Worker(workerUrl)))
 
 function nextWorker() {
   try {
