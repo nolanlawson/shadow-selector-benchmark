@@ -101,19 +101,20 @@ function generateRandomCss({ numRules, classes, attributes, tags }) {
   return str
 }
 
-function createStyleTag(css) {
-  const style = document.createElement('style')
-  style.textContent = css
-  return style
+function createConstructableStylesheet(css) {
+  const sheet = new CSSStyleSheet()
+  sheet.replaceSync(css)
+  return sheet
 }
 
 function injectGlobalCss(css) {
-  document.head.appendChild(createStyleTag(css))
+  document.adoptedStyleSheets.push(createConstructableStylesheet(css))
 }
 
 function reset() {
   container.innerHTML = ''
   $$('style').forEach(style => style.remove())
+  document.adoptedStyleSheets = []
   resetRandomSeed()
   scopeId = 0
 }
@@ -233,7 +234,7 @@ async function doRunTest() {
       // but just in case browsers have some magic to process the stylesheet as early as possible,
       // do it at the same time we would be injecting global styles
       for (const { shadowRoot, stylesheet } of stylesheetsToProcess) {
-        shadowRoot.appendChild(createStyleTag(stylesheet))
+        shadowRoot.adoptedStyleSheets.push(createConstructableStylesheet(stylesheet))
       }
     } else {
       if (oneBigStyle) {
