@@ -29,7 +29,7 @@ const display = $('#display')
 let scopeId = 0
 
 scopeStylesInput.addEventListener('change', () => {
-  useClassesInput.disabled = oneBigStyleInput.disabled = !scopeStylesInput.checked
+  useClassesInput.disabled = !scopeStylesInput.checked
 })
 
 goButton.addEventListener('click', e => {
