@@ -9,7 +9,12 @@
     "start": "serve",
     "dev": "NODE_ENV=development run-p dev:rollup dev:serve",
     "dev:rollup": "rollup -c --watch",
-    "dev:serve": "serve"
+    "dev:serve": "serve",
+    "benchmark": "npm run benchmark:build && npm run benchmark:chrome && npm run benchmark:firefox && npm run benchmark:safari",
+    "benchmark:build": "node ./bin/build-tachometer-json.js",
+    "benchmark:chrome": "tach --config chrome.tachometer.json --json-file chrome.results.json",
+    "benchmark:firefox": "tach --config firefox.tachometer.json --json-file firefox.results.json",
+    "benchmark:safari": "tach --config safari.tachometer.json --json-file safari.results.json"
   },
   "author": "Nolan Lawson",
   "license": "Apache-2.0",
@@ -37,6 +42,7 @@
     "serve": "^13.0.2",
     "stream": "^0.0.2",
     "string_decoder": "^1.3.0",
+    "tachometer": "^0.5.10",
     "tty-browserify": "^0.0.1",
     "url": "^0.11.0",
     "util": "^0.12.4"

@@ -277,3 +277,29 @@ async function digestMessage(message) {
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
+
+const params = new URLSearchParams(location.search)
+
+async function main() {
+  if (params.get('auto') === 'true') {
+    for (const input of $$('form input')) {
+      const { id } = input
+      const val = params.get(id)
+      if (val) {
+        if (input.type === 'number') {
+          input.value = parseInt(val, 10)
+        } else if (input.type === 'checkbox') {
+          input.checked = val === 'true'
+        }
+      }
+    }
+    // Avoid measuring the style/layout of the form elements
+    await new Promise(resolve => requestAnimationFrame(() => resolve()))
+    await new Promise(resolve => requestAnimationFrame(() => resolve()))
+    await doRunTest()
+  }
+}
+
+main().catch(err => {
+  console.error(err)
+})
