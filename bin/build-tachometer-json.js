@@ -43,6 +43,14 @@ const makeJson = browser => ({
         {
           "name": "Unscoped - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=false&oneBigStyle=true"
+        },
+        {
+          "name": "Scoping - classes - every selector",
+          "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true&scopeModeEvery=true"
+        },
+        {
+          "name": "Scoping - classes - prefix",
+          "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true&scopeModePrefix=true"
         }
       ]
     }

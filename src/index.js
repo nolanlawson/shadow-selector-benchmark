@@ -23,9 +23,9 @@ const numClassesInput = $('#numClasses')
 const numAttributesInput = $('#numAttributes')
 const oneBigStyleInput = $('#oneBigStyle')
 const useClassesInput = $('#useClasses')
-const scopeModeInputLast = $('#last')
-const scopeModeInputEvery = $('#every')
-const scopeModeInputPrefix = $('#prefix')
+const scopeModeInputLast = $('#scopeModeLast')
+const scopeModeInputEvery = $('#scopeModeEvery')
+const scopeModeInputPrefix = $('#scopeModePrefix')
 const container = $('#container')
 const display = $('#display')
 
@@ -294,7 +294,7 @@ async function main() {
       if (val) {
         if (input.type === 'number') {
           input.value = parseInt(val, 10)
-        } else if (input.type === 'checkbox') {
+        } else if (input.type === 'checkbox' || input.type === 'radio') {
           input.checked = val === 'true'
         }
       }

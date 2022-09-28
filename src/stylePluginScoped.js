@@ -61,7 +61,7 @@ function rewriteSelector(id, selector) {
 
   const nodes = []
   selector.each(currentNode => {
-    if (currentNode.type !== 'pseudo' && currentNode.type !== 'combinator') {
+    if (currentNode.type !== 'pseudo') {
       nodes.push(currentNode)
     }
   });
@@ -69,7 +69,15 @@ function rewriteSelector(id, selector) {
   if (mode === 'last') {
     scopeNode(nodes[nodes.length - 1])
   } else if (mode === 'every') {
-    nodes.forEach(node => scopeNode(node))
+    let needsInsert = true
+    for (const node of nodes) {
+      if (node.type === 'combinator') {
+        needsInsert = true
+      } else if (needsInsert) {
+        scopeNode(node)
+        needsInsert = false
+      }
+    }
   } else { // prefix
     const tag = selectorParser.tag({
       value: componentTag,
