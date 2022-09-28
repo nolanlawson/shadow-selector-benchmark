@@ -1,5 +1,5 @@
 import register from 'promise-worker/register.js'
-import { scopedPlugin, setUseClasses } from './stylePluginScoped.js';
+import {scopedPlugin, setComponentTag, setMode, setUseClasses} from './stylePluginScoped.js';
 import * as postcss from 'postcss';
 
 export async function scopeStyle(inputCss, token) {
@@ -13,7 +13,9 @@ export async function scopeStyle(inputCss, token) {
   return css
 }
 
-register(({ css, token, useClasses }) => {
+register(({ css, token, useClasses, mode, componentTag }) => {
   setUseClasses(useClasses)
+  setMode(mode)
+  setComponentTag(componentTag)
   return scopeStyle(css, token)
 })

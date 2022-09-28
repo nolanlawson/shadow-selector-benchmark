@@ -23,13 +23,18 @@ const numClassesInput = $('#numClasses')
 const numAttributesInput = $('#numAttributes')
 const oneBigStyleInput = $('#oneBigStyle')
 const useClassesInput = $('#useClasses')
+const scopeModeInputLast = $('#last')
+const scopeModeInputEvery = $('#every')
+const scopeModeInputPrefix = $('#prefix')
 const container = $('#container')
 const display = $('#display')
 
 let scopeId = 0
 
 scopeStylesInput.addEventListener('change', () => {
-  useClassesInput.disabled = !scopeStylesInput.checked
+  for (const input of [useClassesInput, scopeModeInputLast, scopeModeInputEvery, scopeModeInputPrefix]) {
+    input.disabled = !scopeStylesInput.checked
+  }
 })
 
 goButton.addEventListener('click', e => {
@@ -128,15 +133,16 @@ async function doRunTest() {
   const scopeStyles = scopeStylesInput.checked
   const oneBigStyle = oneBigStyleInput.checked
   const useClasses = useClassesInput.checked
+  const scopeMode = scopeModeInputLast.checked ? 'last' : scopeModeInputEvery.checked ? 'every' : 'prefix'
 
   reset()
 
-  async function generateRandomScopedCss({ classes, attributes, tags, scopeToken, useClasses }) {
+  async function generateRandomScopedCss({ classes, attributes, tags, scopeToken, useClasses, scopeMode, componentTag }) {
     const css = generateRandomCss({ numRules: numRulesPerComponent, classes, attributes, tags })
     if (!scopeStyles) {
       return css
     }
-    return (await scopeStyle({ css, token: scopeToken, useClasses }))
+    return (await scopeStyle({ css, token: scopeToken, useClasses, mode: scopeMode, componentTag }))
   }
 
   function createComponent({ scopeToken }) {
@@ -209,7 +215,7 @@ async function doRunTest() {
     const { component, tags, classes, attributes } = createComponent({ scopeToken })
 
     generateStylesheetPromises.push((async () => {
-      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules, useClasses })
+      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules, useClasses, scopeMode, componentTag: component.tagName.toLowerCase() })
 
       if (useShadowDom) {
         return { shadowRoot: component.shadowRoot, stylesheet }

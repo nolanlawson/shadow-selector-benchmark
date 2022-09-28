@@ -17,6 +17,7 @@ function nextWorker() {
   }
 }
 
-export function scopeStyle({ css, token, useClasses }) {
-  return nextWorker().postMessage({ css, token, useClasses })
+export async function scopeStyle({ css, token, useClasses, mode, componentTag }) {
+  const res = await nextWorker().postMessage({ css, token, useClasses, mode, componentTag })
+  return res
 }

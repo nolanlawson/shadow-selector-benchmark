@@ -34,6 +34,29 @@
     <div style="padding: 10px; margin-left: 20px;">
       <label>Scope with classes (otherwise attributes) <input type="checkbox" id="useClasses" checked></label>
     </div>
+    <div style="padding: 10px; margin-left: 20px;">
+      <fieldset>
+        <legend>Scope mode:</legend>
+        <div>
+          <label>
+            <input type="radio" id="last" name="scopeMode" value="last" checked>
+            Rightmost selector only
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" id="every" name="scopeMode" value="every">
+            All selectors
+          </label>
+        </div>
+        <div>
+          <label>
+            <input type="radio" id="prefix" name="scopeMode" value="prefix">
+            Prefix with tag name
+          </label>
+        </div>
+      </fieldset>
+    </div>
     <div style="padding: 10px">
       <label>Concatenate stylesheets (when inserting globally) <input type="checkbox" id="oneBigStyle" checked></label>
     </div>
