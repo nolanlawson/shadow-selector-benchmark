@@ -49,12 +49,20 @@ const makeJson = browser => ({
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true&scopeModeEvery=true"
         },
         {
+          "name": "Scoping - attributes - every selector",
+          "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=false&scopeModeEvery=true"
+        },
+        {
           "name": "Scoping - tag name prefix",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true&scopeModePrefix=true"
         },
         {
           "name": "Scoping - classes - every selector - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=true&scopeModeEvery=true"
+        },
+        {
+          "name": "Scoping - attributes - every selector - concatenated",
+          "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=false&scopeModeEvery=true"
         },
         {
           "name": "Scoping - tag name prefix - concatenated",
