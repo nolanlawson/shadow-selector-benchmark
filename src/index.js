@@ -30,6 +30,7 @@ const container = $('#container')
 const display = $('#display')
 
 let scopeId = 0
+let componentTagNameIndex = 0
 
 scopeStylesInput.addEventListener('change', () => {
   for (const input of [useClassesInput, scopeModeInputLast, scopeModeInputEvery, scopeModeInputPrefix]) {
@@ -121,6 +122,7 @@ function reset() {
   $$('style').forEach(style => style.remove())
   resetRandomSeed()
   scopeId = 0
+  componentTagNameIndex = 0
 }
 
 async function doRunTest() {
@@ -146,7 +148,7 @@ async function doRunTest() {
   }
 
   function createComponent({ scopeToken }) {
-    const component = document.createElement('my-component')
+    const component = document.createElement(`my-component-${componentTagNameIndex++}`)
 
     let renderRoot = component
     if (useShadowDom) {
