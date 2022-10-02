@@ -61,21 +61,17 @@ function rewriteSelector(id, selector) {
 
   const nodes = []
   selector.each(currentNode => {
-    if (currentNode.type !== 'pseudo') {
-      nodes.push(currentNode)
-    }
+    nodes.push(currentNode)
   });
 
   if (mode === 'last') {
     scopeNode(nodes[nodes.length - 1])
   } else if (mode === 'every') {
-    let needsInsert = true
-    for (const node of nodes) {
-      if (node.type === 'combinator') {
-        needsInsert = true
-      } else if (needsInsert) {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i]
+      const nextNode = nodes[i + 1]
+      if (!nextNode || nextNode.type === 'combinator') {
         scopeNode(node)
-        needsInsert = false
       }
     }
   } else { // prefix

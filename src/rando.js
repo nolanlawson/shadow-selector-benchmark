@@ -168,18 +168,30 @@ const colors = [
   "yellowgreen"
 ]
 
+export const randomString = () => 'x' + Math.round(random.int()).toString(16)
+
+let attributes
+
 export function randomChoice(arr) {
   return random.choice(arr)
 }
 
 export const randomTag = () => randomChoice(tags)
 export const randomColor = () => randomChoice(colors)
-export const randomString = () => 'x' + Math.round(random.int()).toString(16)
+
 export const randomNumber = (from, to) => random.randRange(from, to)
 export const randomBool = () => random.bool()
 export const randomCoin = (prob) => random.coin(prob)
+export const randomAttribute = () => {
+  // attributes are likely to collide (e.g. aria-label, aria-pressed), so used a global fixed set
+  if (!attributes) {
+    attributes = Array(100).fill().map(() => `data-${randomString()}`)
+  }
+  return randomChoice(attributes)
+}
 
 export const resetRandomSeed = () => {
+  attributes = undefined // reset
   random = new LCG(SEED) // LCG used because it's relatively fast compared to others
 }
 

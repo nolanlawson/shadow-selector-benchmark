@@ -6,7 +6,7 @@ import {
   randomBool,
   randomChoice,
   randomCoin,
-  resetRandomSeed
+  resetRandomSeed, randomAttribute
 } from './rando.js';
 import {scopeStyle} from './workerClient.js';
 
@@ -58,13 +58,18 @@ function generateAttributeValueSelector({ name, value }) {
 
 function generateRandomCssRule({ classes, attributes, tags }) {
 
+  const allSelectorTypes = ['tag', 'class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute', 'nthChild']
+
   function generateRandomFullSelector() {
     let str = ''
     do {
-      str += generateRandomSelector(['tag', 'class', 'attributeName', 'attributeValue'])
+      const firstSelectorType = randomChoice(allSelectorTypes)
+      str += generateRandomSelector(firstSelectorType)
 
       if (randomBool()) {
-        str += generateRandomSelector(['class', 'attributeName', 'attributeValue', 'notClass', 'notAttribute', 'nthChild']) // combinator selector
+        // concatenating two tags is not okay
+        const secondSelectorType = randomChoice(firstSelectorType === 'tag' ? allSelectorTypes.filter(_ => _ !== 'tag') : allSelectorTypes)
+        str += generateRandomSelector(secondSelectorType) // combinator selector
       }
       str += ' ' // descendant selector
     } while (randomBool())
@@ -72,8 +77,7 @@ function generateRandomCssRule({ classes, attributes, tags }) {
     return str
   }
 
-  function generateRandomSelector(selectorTypes) {
-    const selectorType = randomChoice(selectorTypes)
+  function generateRandomSelector(selectorType) {
     switch (selectorType) {
       case 'tag':
         return tags.length ? randomChoice(tags) : randomString()
@@ -181,7 +185,7 @@ async function doRunTest() {
       }
 
       for (let j = 0; j < numAttributesPerElement; j++) {
-        const attribute = `data-${randomString()}`
+        const attribute = randomAttribute()
         const attributeValue = randomString()
         attributes.push({ name: attribute, value: attributeValue })
         elm.setAttribute(attribute, attributeValue)
@@ -217,7 +221,7 @@ async function doRunTest() {
     const { component, tags, classes, attributes } = createComponent({ scopeToken })
 
     generateStylesheetPromises.push((async () => {
-      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, numRules, useClasses, scopeMode, componentTag: component.tagName.toLowerCase() })
+      const stylesheet = await generateRandomScopedCss({ classes, tags, attributes, scopeToken, useClasses, scopeMode, componentTag: component.tagName.toLowerCase() })
 
       if (useShadowDom) {
         return { shadowRoot: component.shadowRoot, stylesheet }
