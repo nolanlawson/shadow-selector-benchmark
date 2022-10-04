@@ -17,11 +17,11 @@ const makeJson = browser => ({
       ],
       "expand": [
         {
-          "name": "Scoping - classes",
+          "name": "Scoping - classes - RHS",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true"
         },
         {
-          "name": "Scoping - attributes",
+          "name": "Scoping - attributes - RHS",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=false"
         },
         {
@@ -33,11 +33,11 @@ const makeJson = browser => ({
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=false&oneBigStyle=false"
         },
         {
-          "name": "Scoping - classes - concatenated",
+          "name": "Scoping - classes - RHS - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=true"
         },
         {
-          "name": "Scoping - attributes - concatenated",
+          "name": "Scoping - attributes - RHS - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=false"
         },
         {
@@ -45,27 +45,27 @@ const makeJson = browser => ({
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=false&oneBigStyle=true"
         },
         {
-          "name": "Scoping - classes - every selector",
+          "name": "Scoping - classes - full",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true&scopeModeEvery=true"
         },
         {
-          "name": "Scoping - attributes - every selector",
+          "name": "Scoping - attributes - full",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=false&scopeModeEvery=true"
         },
         {
-          "name": "Scoping - tag name prefix",
+          "name": "Scoping - tag prefix",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=false&useClasses=true&scopeModePrefix=true"
         },
         {
-          "name": "Scoping - classes - every selector - concatenated",
+          "name": "Scoping - classes - full - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=true&scopeModeEvery=true"
         },
         {
-          "name": "Scoping - attributes - every selector - concatenated",
+          "name": "Scoping - attributes - full - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=false&scopeModeEvery=true"
         },
         {
-          "name": "Scoping - tag name prefix - concatenated",
+          "name": "Scoping - tag prefix - concatenated",
           "url": "http://localhost:3000/?auto=true&useShadowDom=false&scopeStyles=true&oneBigStyle=true&useClasses=true&scopeModePrefix=true"
         }
       ]
