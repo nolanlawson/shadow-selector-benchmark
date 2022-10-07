@@ -67,8 +67,8 @@ function generateRandomCssRule({ classes, attributes, tags }) {
       str += generateRandomSelector(firstSelectorType)
 
       if (randomBool()) {
-        // concatenating two tags is not okay
-        const secondSelectorType = randomChoice(firstSelectorType === 'tag' ? allSelectorTypes.filter(_ => _ !== 'tag') : allSelectorTypes)
+        // concatenating a tag to something else is not okay
+        const secondSelectorType = randomChoice(allSelectorTypes.filter(_ => _ !== 'tag'))
         str += generateRandomSelector(secondSelectorType) // combinator selector
       }
       str += ' ' // descendant selector
